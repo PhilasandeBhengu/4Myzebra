@@ -374,22 +374,10 @@
       // --- Configuration ---
       const START_DATE = new Date("2025-02-15T00:00:00");
       const QUOTES = [
-        {
-          quote: "The best thing to hold onto in life is each other.",
-          cite: "Audrey Hepburn",
-        },
-        {
-          quote: "You are altogether beautiful, my love; there is no flaw in you.",
-          cite: "Song of Solomon 4:7",
-        },
-        {
-          quote: "I love you not only for what you are, but for what I am when I am with you.",
-          cite: "Roy Croft",
-        },
-        {
-          quote: "I am my beloved’s, and my beloved is mine.",
-          cite: "Song of Solomon 6:3",
-        },
+        { quote: "The best thing to hold onto in life is each other.", cite: "Audrey Hepburn" },
+        { quote: "You are altogether beautiful, my love; there is no flaw in you.", cite: "Song of Solomon 4:7" },
+        { quote: "I love you not only for what you are, but for what I am when I am with you.", cite: "Roy Croft" },
+        { quote: "I am my beloved’s, and my beloved is mine.", cite: "Song of Solomon 6:3" },
       ];
       const TIMELINE_EVENTS = [
         {
@@ -407,13 +395,13 @@
         { name: "My Birthday", date: "2026-04-27", startDate: "2025-04-27" },
         { name: "Her Birthday", date: "2026-03-22", startDate: "2025-03-22" },
       ];
+
       // Music Player
       const PLAYLIST = [
         { title: "Bonnie - Tink", src:"music/Bonnie.mp3"},
-        {title: "Sex Sounds - Lil Tjay", src:"music/Lil Tjay - Sex Sounds (Lyrics).mp3"},
+        { title:"Sex Sounds - Lil Tjay", src:"music/Lil Tjay - Sex Sounds (Lyrics).mp3"},
         { title: "Heaven can Wait - Artist", src:"music/Michael Jackson - Heaven Can Wait (Official Audio).mp3" },
         { title: "Best Part - Daniel Ceaser", src: "music/Daniel Caesar - Best Part (Audio) ft. H.E.R.(1).mp3" },
-        { title: "Hold - Blxckie", src: "music/blxckie - hold (visualiser).mp3" },
       ];
       let currentTrackIndex = 0;
       const audioPlayer = document.getElementById("audio-player");
@@ -446,39 +434,43 @@
         playTrack();
       }
       playPauseBtn.addEventListener("click", () => {
-        if (audioPlayer.paused) {
-          playTrack();
-        } else {
-          pauseTrack();
-        }
+        if (audioPlayer.paused) { playTrack(); } else { pauseTrack(); }
       });
       nextBtn.addEventListener("click", playNextTrack);
       prevBtn.addEventListener("click", playPrevTrack);
       audioPlayer.addEventListener("ended", playNextTrack);
       loadTrack(currentTrackIndex);
+
       // --- Functions ---
       function updateCounters() {
         const now = new Date();
-        const diff = now - START_DATE;
-        const totalSeconds = Math.floor(diff / 1000);
-        const totalMinutes = Math.floor(totalSeconds / 60);
-        const totalHours = Math.floor(totalMinutes / 60);
-        const totalDays = Math.floor(totalHours / 24);
-        const totalMonths = Math.floor(totalDays / 30.44);
-        const totalYears = Math.floor(totalMonths / 12);
-        const loveTimeValues = [
-          totalYears,
-          totalMonths % 12,
-          totalDays % 30,
-          totalHours % 24,
-          totalMinutes % 60,
-          totalSeconds % 60,
-        ];
+
+        // Accurate years, months, days calculation
+        let years = now.getFullYear() - START_DATE.getFullYear();
+        let months = now.getMonth() - START_DATE.getMonth();
+        let days = now.getDate() - START_DATE.getDate();
+        let hours = now.getHours() - START_DATE.getHours();
+        let minutes = now.getMinutes() - START_DATE.getMinutes();
+        let seconds = now.getSeconds() - START_DATE.getSeconds();
+
+        if (seconds < 0) { seconds += 60; minutes--; }
+        if (minutes < 0) { minutes += 60; hours--; }
+        if (hours < 0) { hours += 24; days--; }
+        if (days < 0) {
+          const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+          days += lastMonth;
+          months--;
+        }
+        if (months < 0) { months += 12; years--; }
+
+        const loveTimeValues = [years, months, days, hours, minutes, seconds];
         const loveLabels = ["Years", "Months", "Days", "Hours", "Minutes", "Seconds"];
         renderCountdown("love-counter", loveTimeValues, loveLabels);
+
+        // Upcoming Events Countdown (unchanged)
         const countdownEventsContainer = document.getElementById("countdown-events");
         countdownEventsContainer.innerHTML = "";
-        UPCOMING_EVENTS.forEach((event, index) => {
+        UPCOMING_EVENTS.forEach((event) => {
           const eventDate = new Date(event.date);
           const startDate = new Date(event.startDate);
           const diffMs = eventDate - now;
@@ -507,11 +499,12 @@
             `;
             eventElement.insertAdjacentHTML('beforeend', progressBarHTML);
           } else {
-             eventElement.innerHTML += `<p>This event has passed! 🎉</p>`;
+            eventElement.innerHTML += `<p>This event has passed! 🎉</p>`;
           }
           countdownEventsContainer.appendChild(eventElement);
         });
       }
+
       function renderCountdown(container, values, labels) {
         if (typeof container === "string") {
           container = document.getElementById(container);
@@ -531,6 +524,7 @@
           container.appendChild(timeUnit);
         });
       }
+
       function createStar(container) {
         const star = document.createElement("div");
         star.className = "star";
@@ -540,25 +534,26 @@
         star.style.animationDuration = `${Math.random() * 3 + 2}s`;
         container.appendChild(star);
       }
+
       function createStars(count) {
         const starsContainer = document.querySelector(".stars");
         for (let i = 0; i < count; i++) {
           createStar(starsContainer);
         }
       }
+
       function updateParallax(event) {
         const parallaxBg = document.getElementById("parallax-bg");
         const x = event.clientX;
         const y = event.clientY;
-        parallaxBg
-          .querySelectorAll(".stars, .aurora, .moon")
-          .forEach((el) => {
-            const speed = parseFloat(el.getAttribute("data-speed") || "0.2");
-            const moveX = (x / -10) * speed;
-            const moveY = (y / -10) * speed;
-            el.style.transform = `translate(${moveX}px, ${moveY}px)`;
-          });
+        parallaxBg.querySelectorAll(".stars, .aurora, .moon").forEach((el) => {
+          const speed = parseFloat(el.getAttribute("data-speed") || "0.2");
+          const moveX = (x / -10) * speed;
+          const moveY = (y / -10) * speed;
+          el.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        });
       }
+
       function createParticle(x, y) {
         const particle = document.createElement("div");
         particle.className = "particle";
@@ -572,6 +567,7 @@
         document.getElementById("particle-container").appendChild(particle);
         setTimeout(() => particle.remove(), 3000);
       }
+
       function setupQuoteRotator() {
         let currentQuoteIndex = 0;
         const quoteElement = document.getElementById("rotating-quote");
@@ -583,6 +579,7 @@
         showNextQuote();
         setInterval(showNextQuote, 10000);
       }
+
       function setupTimeline() {
         const timeline = document.getElementById("timeline");
         TIMELINE_EVENTS.forEach((event) => {
@@ -605,27 +602,23 @@
               }
             });
           },
-          {
-            threshold: 0.5,
-          }
+          { threshold: 0.5 }
         );
         document.querySelectorAll(".timeline-item").forEach((item) => {
           observer.observe(item);
         });
       }
+
       // --- Main Execution ---
       document.addEventListener("DOMContentLoaded", () => {
-        // Initial setup
         updateCounters();
         createStars(200);
         setupQuoteRotator();
         setupTimeline();
-        // Event Listeners
         document.addEventListener("mousemove", (event) => {
           updateParallax(event);
           createParticle(event.clientX, event.clientY);
         });
-        // Timers
         setInterval(updateCounters, 1000);
       });
     </script>
